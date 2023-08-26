@@ -166,11 +166,20 @@ function ENT:AddArmor( pos, ang, mins, maxs, health, damagereduction )
 		Callback = function( tbl, ent, dmginfo )
 			if not IsValid( Armor ) then return end
 
-			Armor:OnTakeDamage( dmginfo )
+			local DidDamage = Armor:OnTakeDamage( dmginfo )
 
 			if Armor:GetDestroyed() then return end
 
-			dmginfo:ScaleDamage( (damagereduction or 0) )
+			dmginfo:ScaleDamage( 0 )
+
+			if DidDamage then
+				local Attacker = dmginfo:GetAttacker() 
+				if IsValid( Attacker ) and Attacker:IsPlayer() then
+					net.Start( "lvs_hitmarker" )
+						net.WriteBool( false )
+					net.Send( Attacker )
+				end
+			end
 		end
 	} )
 
